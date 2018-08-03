@@ -5,22 +5,22 @@ import {
   Text, 
   View, 
   Button,
-  AsyncStorage,
+  AsyncStorage, //AsyncStorage is a simple, unencrypted, asynchronous, persistent, key-value storage system that is global to the app. It should be used instead of LocalStorage.
   Alert,
 } from 'react-native';
 
-import api from './services/api';
+import api from './services/api'; //Settings with the server API
 
 export default class App extends Component {
 
-  state = {
+  state = { // Initialization of variables
     loggedInUser: null,
     errorMessage: null,
     projects: [],
   };
 
-  signIn = async () => {
-    try {
+  signIn = async () => { 
+    try { 
       const response = await api.post('/auth/authenticate', {  //Authentication route that is passed by the API
         email: 'goowlart@test4.com',
         password: '12345',
@@ -29,7 +29,7 @@ export default class App extends Component {
      const { token, user } = response.data; //Response received from the database passed to two constants
 
      await AsyncStorage.multiSet([
-        ['@CodeApi:token', token],
+        ['@CodeApi:token', token], 
         ['@CodeApi:user', JSON.stringify(user)], //Object coming from the database is converted into JSON
       ]);
 
@@ -39,14 +39,13 @@ export default class App extends Component {
 
     } catch (response){
 
-     this.setState({ errorMessage: response.data.error });
+     this.setState({ errorMessage: response.data.error }); 
     }
   };
 
   getProjectList = async () => {
     try {
       const response = await api.get('/projects');
-
       const { projects } = response.data;
 
       this.setState({ projects });
@@ -55,7 +54,7 @@ export default class App extends Component {
     }
   };
 
-  async componentDidMount(){
+  async componentDidMount(){ //save in history the token of the logged-in user if he closes the application
     const token = await AsyncStorage.getItem('@CodeApi:token');
     const user = JSON.stringify(await AsyncStorage.getItem('@CodeApi:user'));
     
@@ -75,6 +74,12 @@ export default class App extends Component {
         : <Button onPress={this.signIn} title="signIn" 
         />
       }
+      {this.state.projects.map(project => (
+        <View key={project._id} style={{ marginTop: 15 }}>
+        <Text style={{ fontWeight: 'bold' }}> { project.title } </Text>
+        <Text> { project.description } </Text>
+        </View>
+        ))}
       </View>
     );
   }
